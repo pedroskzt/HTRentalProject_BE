@@ -23,3 +23,11 @@ class UsersList(APIView):
 
     def get(self, request):
         return UserHandler.handler_users_list(request)
+
+class UserRegistration(APIView):
+    """
+    View responsible for registering the user
+    """
+
+    def post(self, request):
+        return UserHandler.handler_user_registration(request_data=request.data)

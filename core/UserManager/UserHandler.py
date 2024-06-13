@@ -44,3 +44,28 @@ class UserHandler:
         print(user_list)
         ser = UserSerializer(user_list, many=True)
         return Response(data=ser.data, status=status.HTTP_200_OK)
+
+    @staticmethod
+    def handler_user_registration(request_data):
+        """
+        """
+        REQUIRED_KEYS = ["first_name", "last_name", "email", "password", "address", "phone_number"]
+        for required_key in REQUIRED_KEYS:
+            if required_key not in request_data:
+                return Response(f'Invalid request. {key} is missing.', status=status.HTTP_400_BAD_REQUEST)
+
+            
+        first_name = request_data.get('first_name')
+        last_name = request_data.get('last_name')
+        email = request_data.get('email')
+        password = request_data.get('password')
+        address = request_data.get('address')
+        phone_number = request_data.get('phone_number')
+
+        try:
+            user = User(first_name=first_name, last_name=last_name,email=email,password=password,address=address,phone_number=phone_number)
+            user.save()
+        except ValueError as e:
+            return Response('Error occured during registration flow.', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response('User registration was successful.', status=status.HTTP_200_OK)
