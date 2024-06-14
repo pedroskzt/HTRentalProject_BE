@@ -2,8 +2,6 @@ from rest_framework import serializers
 
 from api_auth.User.UserModel import User
 
-
-
 class UserSerializer(serializers.ModelSerializer):
 
  class Meta:
@@ -22,5 +20,3 @@ class UserSerializer(serializers.ModelSerializer):
      # Save the user in the database
      user_obj.save ()
      return user_obj
-
-   
