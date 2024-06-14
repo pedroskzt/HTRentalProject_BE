@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from api_auth.User.UserModel import User
+from api_auth.User.serializers import UserSerializer
 from core.UserManager.UserHelper import UserHelper
 
 
@@ -39,15 +40,14 @@ class UserHandler:
         """
         """
         try:
-        
-           request_data['username'] = request_data.get('email')
-           user_serializer = UserSerializer(data=request_data)
-           if user_serializer.is_valid():
-            user_serializer.save()
-           else:
-            return Response(user_sertalizer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            request_data['username'] = request_data.get('email')
+            user_serializer = UserSerializer(data=request_data)
+            if user_serializer.is_valid():
+                user_serializer.save()
+            else:
+                return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         except ValueError as e:
-          return Response ("Error occuned during registration flow.", status=status.HTTP_400_BAD_REQUEST)
-        return Response ("User registration was successful.", status=status.HTTP_201_CREATED)
-        
+            return Response("Error occuned during registration flow.", status=status.HTTP_400_BAD_REQUEST)
+        return Response("User registration was successful.", status=status.HTTP_201_CREATED)
