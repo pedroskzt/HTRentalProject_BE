@@ -32,3 +32,22 @@ class UserHandler:
                 return Response(data=response_data, status=status.HTTP_200_OK)
 
         return Response('Invalid credentials', status=status.HTTP_400_BAD_REQUEST)
+
+    @staticmethod
+    def handler_user_registration(request_data):
+
+        """
+        """
+        try:
+        
+           request_data['username'] = request_data.get('email')
+           user_serializer = UserSerializer(data=request_data)
+           if user_serializer.is_valid():
+            user_serializer.save()
+           else:
+            return Response(user_sertalizer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        except ValueError as e:
+          return Response ("Error occuned during registration flow.", status=status.HTTP_400_BAD_REQUEST)
+        return Response ("User registration was successful.", status=status.HTTP_201_CREATED)
+        

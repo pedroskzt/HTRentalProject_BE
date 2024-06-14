@@ -10,3 +10,12 @@ class UserLogin(APIView):
 
     def post(self, request):
         return UserHandler.handler_user_login(request_data=request.data)
+
+
+class UserRegistration(APIView):
+    """
+    View responsible for registering the user
+    """
+
+    def post(self, request):
+        return UserHandler.handler_user_registration(request_data=request.data)
