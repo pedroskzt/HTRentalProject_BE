@@ -10,3 +10,12 @@ class GetAllTools(APIView):
 
     def get(self, request):
         return ToolsHandler.handler_get_all_tools()
+
+
+class GetAllToolsModels(APIView):
+    """
+    View responsible for returning all tools model, its information and amount available of each model.
+    """
+
+    def get(self, request):
+        return ToolsHandler.handler_get_all_tools_models()
