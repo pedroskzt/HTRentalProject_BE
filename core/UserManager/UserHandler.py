@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from api_auth.User.UserModel import User
-from api_auth.User.serializers import UserSerializer
+from api_auth.User.serializers import (UserSerializer, UserUpdateSerializer)
 from core.UserManager.UserHelper import UserHelper
 
 
@@ -51,3 +51,26 @@ class UserHandler:
         except ValueError as e:
             return Response("Error occuned during registration flow.", status=status.HTTP_400_BAD_REQUEST)
         return Response("User registration was successful.", status=status.HTTP_201_CREATED)
+
+
+    @staticmethod
+    def handler_user_update(request_data, user):
+        """
+        Handler for updating user information. It validates the passed values and updated only the passed fields.
+        Updatable fields:
+        - first_name
+        - last_name
+        - address
+        - phone_number
+
+        :param request_data:
+        :param user:
+        :return:
+        """
+
+        user_serializer = UserUpdateSerializer(user, data=request_data)
+        if user_serializer.is_valid():
+            user_serializer.save()
+            return Response(user_serializer.data, status=status.HTTP_202_ACCEPTED)
+        else:
+            return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
