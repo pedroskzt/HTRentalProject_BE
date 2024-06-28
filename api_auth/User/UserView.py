@@ -48,9 +48,9 @@ class UserGetInfo(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (JWTAuthentication,)
 
-    def get(self, request):
+    def get(self, request, user_id):
         try:
-            UserHandler.handle_user_get_info(request.user)
+            UserHandler.handle_user_get_info(user_id)
         except Exception as e:
             return Response({'user_error': "Something went wrong, please try again later or contact support.",
                              "dev_error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -7,6 +7,6 @@ urlpatterns = [
     path('Login', UserLogin.as_view()),
     path('registration', UserRegistration.as_view()),
     path('User/Update', UserUpdate.as_view()),
-    path('User/Get/Info', UserGetInfo.as_view())
+    path('User/Get/Info/<int:user_id>', UserGetInfo.as_view())
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)
