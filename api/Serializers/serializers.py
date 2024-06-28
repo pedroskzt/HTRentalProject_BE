@@ -3,6 +3,7 @@ from rest_framework.serializers import ModelSerializer
 
 from api.Models.tools_model import Tools
 from api.Models.tools_model_model import ToolsModel
+from api.Models.tools_history_model import ToolsHistory
 
 
 class ToolsSerializer(ModelSerializer):
@@ -19,3 +20,11 @@ class ToolsModelSerializer(ModelSerializer):
         model = ToolsModel
         fields = '__all__'
         depth = 1
+
+
+class ToolsHistorySerializer(ModelSerializer):
+
+    class Meta:
+        model = ToolsHistory
+        exclude = ('user',)
+        depth = 3

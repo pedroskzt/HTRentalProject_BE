@@ -1,4 +1,6 @@
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from core.ToolsManager.ToolsHandler import ToolsHandler
 
@@ -20,6 +22,7 @@ class GetAllToolsModels(APIView):
     def get(self, request):
         return ToolsHandler.handler_get_all_tools_models()
 
+
 class GetTool(APIView):
     """
     View responsible for returning a tool given an ID.
@@ -27,7 +30,8 @@ class GetTool(APIView):
 
     def get(self, request, tool_id):
         return ToolsHandler.handler_get_tool(tool_id)
-    
+
+
 class GetToolsByCategory(APIView):
     """
     View responsible for returning a list of tools given a category.
@@ -35,3 +39,16 @@ class GetToolsByCategory(APIView):
 
     def get(self, request):
         return ToolsHandler.handler_get_tools_by_category(request)
+
+
+class GetToolsHistoryByUser(APIView):
+    """
+    View responsible for returning a list of tools and its information for each tool rented by the user.
+    Requires the user to be logged in.
+    """
+
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (JWTAuthentication,)
+
+    def get(self, request):
+        return ToolsHandler.handler_get_tools_history_by_user(request.user)
