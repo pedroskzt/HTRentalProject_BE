@@ -74,3 +74,24 @@ class UserHandler:
             return Response(user_serializer.data, status=status.HTTP_202_ACCEPTED)
         else:
             return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @staticmethod
+    def handler_get_user_info(user_id):
+        """
+        Handler for getting user info.
+
+        :param user_id:
+        :return: dict with user info - first name, last name, email,address, phone number
+        """
+
+        if not isinstance(user_id, int)
+            return Response(user_serializer.data, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            try:
+                user = UserHelper.get_user_by_id(user_id)
+                serialized_user = UserHandler.serialize_user_info(user)
+
+                return Response(serialized_user, status=HTTP_200_OK)
+            except User.DoesNotExist:
+
+                return Response(user.errors, status=status.HTTP_404_NOT_FOUND)

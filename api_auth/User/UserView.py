@@ -27,7 +27,7 @@ class UserRegistration(APIView):
 
 class UserUpdate(APIView):
     """
-    View responsible for returning a list of tools and its information for each tool rented by the user.
+    View responsible for updating user info
     """
 
     permission_classes = (IsAuthenticated,)
@@ -39,3 +39,18 @@ class UserUpdate(APIView):
         except Exception as e:
             return Response({'user_error': "Something went wrong, please try again later or contact support.",
                              "dev_error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+class UserGetInfo(APIView):
+    """
+    View response for getting user information
+    """
+
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (JWTAuthentication,)
+
+    def get(self, request):
+        try:
+            UserHandler.handle_user_get_info(request.user)
+        except Exception as e:
+            return Response({'user_error': "Something went wrong, please try again later or contact support.",
+                             "dev_error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
