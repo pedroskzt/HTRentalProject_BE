@@ -19,3 +19,33 @@ class UserSerializer(serializers.ModelSerializer):
         # Save the user in the database
         user_obj.save()
         return user_obj
+
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name', 'address', 'phone_number')
+
+    def validate_first_name(self, value):
+        if len(value) <= 0:
+            raise serializers.ValidationError('First name cannot be empty')
+
+        return value
+
+    def validate_last_name(self, value):
+        if len(value) <= 0:
+            raise serializers.ValidationError('Last name cannot be empty')
+
+        return value
+
+    def validate_address(self, value):
+        if len(value) <= 0:
+            raise serializers.ValidationError('Address cannot be empty')
+
+        return value
+
+    def validate_phone_number(self, value):
+        if len(value) <= 0:
+            raise serializers.ValidationError('Phone number cannot be empty')
+
+        return value
