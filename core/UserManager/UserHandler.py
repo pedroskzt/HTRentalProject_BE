@@ -95,3 +95,21 @@ class UserHandler:
             except User.DoesNotExist:
 
                 return Response(user.errors, status=status.HTTP_404_NOT_FOUND)
+
+    @staticmethod
+    def handler_user_change_password(request_data, user_id):
+        """
+        Handler for changing user password
+
+        :param user_id:
+        :param request_data:
+        :return: dict with user info - first name, last name, email,address, phone number
+        """
+
+        user_serializer = UserUpdateSerializer(user, data=request_data)
+        if user_serializer.is_valid():
+            user_serializer.save()
+            return Response("Password has been updated successfully.", status=status.HTTP_200_OK)
+        else:
+            return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    

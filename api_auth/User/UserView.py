@@ -54,3 +54,18 @@ class UserGetInfo(APIView):
         except Exception as e:
             return Response({'user_error': "Something went wrong, please try again later or contact support.",
                              "dev_error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class ChangePassword(APIView):
+    """
+    View responsible for updating user password
+    """
+
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (JWTAuthentication,)
+
+    def post(self, request):
+        try:
+            return UserHandler.handler_user_change_password(request.data, user_id)
+        except Exception as e:
+            return Response({'user_error': "Something went wrong, please try again later or contact support.",
+                             "dev_error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
