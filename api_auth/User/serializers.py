@@ -50,17 +50,11 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
         return value
 
-class UserPasswordSerializer(serializers.ModelSerializer):
+
+
+class UserInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('password')
-
-    def validate_password(self, value):
-        if len(value) <= 10:
-            raise serializers.ValidationError('Password must be greater than 10 characters')
-        elif not any(value.isdigit() for character in value):
-            raise serializers.ValidationError('Password must contain at least 1 number')
-
-        return value
-
+        fields = ('first_name', 'last_name', 'address', 'phone_number', 'email')
+        depth = 1
     

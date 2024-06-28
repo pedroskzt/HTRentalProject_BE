@@ -49,11 +49,7 @@ class UserGetInfo(APIView):
     authentication_classes = (JWTAuthentication,)
 
     def get(self, request, user_id):
-        try:
-            UserHandler.handle_user_get_info(user_id)
-        except Exception as e:
-            return Response({'user_error': "Something went wrong, please try again later or contact support.",
-                             "dev_error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return UserHandler.handler_get_user_info(request.user)
 
 class ChangePassword(APIView):
     """
@@ -63,9 +59,9 @@ class ChangePassword(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (JWTAuthentication,)
 
-    def post(self, request):
+    def post(self, request, user_id):
         try:
-            return UserHandler.handler_user_change_password(request.data, user_id)
+            return UserHandler.handler_user_change_password(request.data, request.user)
         except Exception as e:
             return Response({'user_error': "Something went wrong, please try again later or contact support.",
-                             "dev_error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+                             "dev_error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -12,11 +12,10 @@ class UserHelper:
         return User.objects.get(id=id)
 
     @staticmethod
-    def serialize_user_info(user):
-        return {
-            "first_name": user.first_name,
-            "last_name": user.last_name,
-            "email": user.email,
-            "address": user.address,
-            "phone_number": user.phone_number
-        }
+    def validate_password(password):
+        if len(password) <= 10:
+            raise serializers.ValidationError('Password must be greater than 10 characters')
+        elif not any(character.isdigit() for character in password):
+            raise serializers.ValidationError('Password must contain at least 1 number')
+
+        return password

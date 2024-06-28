@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from api_auth.User.UserModel import User
-from api_auth.User.serializers import (UserSerializer, UserUpdateSerializer)
+from api_auth.User.serializers import (UserSerializer, UserUpdateSerializer, UserInfoSerializer)
 from core.UserManager.UserHelper import UserHelper
 
 
@@ -76,40 +76,44 @@ class UserHandler:
             return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @staticmethod
-    def handler_get_user_info(user_id):
+    def handler_get_user_info(user):
         """
         Handler for getting user info.
 
         :param user_id:
         :return: dict with user info - first name, last name, email,address, phone number
         """
+        try:
+            serialized_user = UserInfoSerializer(user)
 
-        if not isinstance(user_id, int)
-            return Response(user_serializer.data, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            try:
-                user = UserHelper.get_user_by_id(user_id)
-                serialized_user = UserHandler.serialize_user_info(user)
+            if serialized_user:
+                return Response(serialized_user.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'user_error': "Something went wrong, please try again later or contact support.",
+                                "dev_error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            
+        return Response({'user_error': "No user was found."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-                return Response(serialized_user, status=HTTP_200_OK)
-            except User.DoesNotExist:
-
-                return Response(user.errors, status=status.HTTP_404_NOT_FOUND)
 
     @staticmethod
-    def handler_user_change_password(request_data, user_id):
+    def handler_user_change_password(request_data, user):
         """
         Handler for changing user password
 
-        :param user_id:
+        :param user:
         :param request_data:
-        :return: dict with user info - first name, last name, email,address, phone number
+        :return: success message
         """
 
-        user_serializer = UserUpdateSerializer(user, data=request_data)
-        if user_serializer.is_valid():
-            user_serializer.save()
+        if not "password" in request_data or request_data.get('password') is None:
+            return Response("Password must be passed in and cannot be null or empty", status = status.HTTP_400_BAD_REQUEST)
+
+        UserHelper.validate_password(request_data.get('password'))
+
+        if user:
+            user.set_password(request_data.get('password'))
+
             return Response("Password has been updated successfully.", status=status.HTTP_200_OK)
         else:
-            return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(validated_data.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
