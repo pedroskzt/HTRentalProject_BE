@@ -2,7 +2,8 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from api.Models.tools_model_model import ToolsModel
-from api.Serializers.serializers import (ToolsSerializer, ToolsModelSerializer, ToolsHistorySerializer)
+from api.Serializers.serializers import (ToolsSerializer, ToolsModelSerializer, ToolsHistorySerializer,
+                                         ToolsCategorySerializer)
 from core.CustomErrors.CustomErrors import CustomError
 from core.ToolsManager.ToolsHelper import ToolsHelper
 
@@ -72,14 +73,13 @@ class ToolsHandler:
                              "dev_error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     @staticmethod
-    def handler_get_tools_by_category(request):
+    def handler_get_tools_by_category(category_id):
         try:
-            category_name = request.GET.get('category_name')
 
-            if not category_name:
+            if not category_id:
                 return Response(CustomError.get_error_by_code("TC-2"), status=status.HTTP_400_BAD_REQUEST)
 
-            category = ToolsHelper.get_tool_category_by_name(category_name)
+            category = ToolsHelper.get_tool_category_by_id(category_id)
             if not category.exists():
                 return Response(CustomError.get_error_by_code("TC-0"), status=status.HTTP_400_BAD_REQUEST)
             category = category.first()
@@ -111,3 +111,9 @@ class ToolsHandler:
         except Exception as e:
             return Response({'user_error': "Something went wrong, please try again later or contact support.",
                              "dev_error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    @staticmethod
+    def handler_get_all_categories():
+        category_objects = ToolsHelper.get_all_categories()
+        category_serializer = ToolsCategorySerializer(category_objects, many=True)
+        return Response(category_serializer.data, status=status.HTTP_200_OK)
