@@ -23,6 +23,15 @@ class GetAllToolsModels(APIView):
         return ToolsHandler.handler_get_all_tools_models()
 
 
+class GetToolsModelById(APIView):
+    """
+    View responsible for returning the model corresponding to the given id.
+    """
+
+    def get(self, request, model_id):
+        return ToolsHandler.handler_get_tools_model_by_id(model_id)
+
+
 class GetTool(APIView):
     """
     View responsible for returning a tool given an ID.

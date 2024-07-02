@@ -1,10 +1,9 @@
-from django.db.models import F, Count, Q
 from rest_framework import status
 from rest_framework.response import Response
 
-from api.Models.tools_category_model import ToolsCategory
 from api.Models.tools_model_model import ToolsModel
 from api.Serializers.serializers import (ToolsSerializer, ToolsModelSerializer, ToolsHistorySerializer)
+from core.CustomErrors.CustomErrors import CustomError
 from core.ToolsManager.ToolsHelper import ToolsHelper
 
 
@@ -31,9 +30,8 @@ class ToolsHandler:
             # Get the tools models
             tools_models_objects = ToolsHelper.get_all_tools_models_objects()
 
-            # for each model, adds a counter with the amount of available tools of that model.
-            tools_models_objects = tools_models_objects.annotate(
-                amount_available=Count(F("tools__id"), filter=Q(tools__available=True)))
+            tools_models_objects = ToolsHelper.count_available_tools_by_model(tools_models_objects)
+            tools_models_objects = ToolsHelper.get_related_tools_models(tools_models_objects)
             if tools_models_objects:
                 # If tools where found, serialize and return the data.
                 tools_models_ser = ToolsModelSerializer(tools_models_objects, many=True)
@@ -43,6 +41,22 @@ class ToolsHandler:
                              "dev_error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({'user_error': "No tools were found."}, status=status.HTTP_400_BAD_REQUEST)
+
+    @staticmethod
+    def handler_get_tools_model_by_id(model_id):
+        try:
+            tools_model = ToolsHelper.get_model_by_id(model_id)
+            if not tools_model.exists():
+                return Response(CustomError.get_error_by_code("TM-0"), status=status.HTTP_400_BAD_REQUEST)
+
+            tools_model = ToolsHelper.count_available_tools_by_model(tools_model)
+            tools_model = ToolsHelper.get_related_tools_models(tools_model)
+
+            tools_model_serializer = ToolsModelSerializer(tools_model, many=True)
+            return Response(tools_model_serializer.data, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response(CustomError.get_error_by_code("GE-0", str(e)), status=status.HTTP_400_BAD_REQUEST)
 
     @staticmethod
     def handler_get_tool(tool_id):
@@ -63,21 +77,24 @@ class ToolsHandler:
             category_name = request.GET.get('category_name')
 
             if not category_name:
-                return Response({'error': 'category parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(CustomError.get_error_by_code("TC-2"), status=status.HTTP_400_BAD_REQUEST)
 
-            category = ToolsCategory.objects.get(name=category_name)
+            category = ToolsHelper.get_tool_category_by_name(category_name)
+            if not category.exists():
+                return Response(CustomError.get_error_by_code("TC-0"), status=status.HTTP_400_BAD_REQUEST)
+            category = category.first()
 
-            tools = ToolsHelper.get_tools_by_category(category)
-
+            tools = ToolsHelper.get_tools_models_by_category(category)
             if not tools.exists():
-                return Response(f"No tools found for this category: {category_name}", status=status.HTTP_404_NOT_FOUND)
+                return Response(CustomError.get_error_by_code("TC-1"), status=status.HTTP_400_BAD_REQUEST)
 
-            tools_serialized = ToolsSerializer(tools, many=True)
-            return Response(tools_serialized.data, status=status.HTTP_200_OK)
+            tools = ToolsHelper.count_available_tools_by_model(tools)
+
+            tools_serializer = ToolsModelSerializer(tools, many=True)
+            return Response(tools_serializer.data, status=status.HTTP_200_OK)
 
         except Exception as e:
-            return Response({'user_error': "Something went wrong, please try again later or contact support.",
-                             "dev_error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(CustomError.get_error_by_code("GE-0", str(e)), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @staticmethod
     def handler_get_tools_history_by_user(user):
