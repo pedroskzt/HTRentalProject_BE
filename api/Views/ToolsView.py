@@ -61,3 +61,14 @@ class GetToolsHistoryByUser(APIView):
 
     def get(self, request):
         return ToolsHandler.handler_get_tools_history_by_user(request.user)
+
+class AddTool(APIView):
+    """
+    View responsible for adding a tool if it given brand and model doesn't already exist.
+    """
+
+    # permission_classes = (IsAuthenticated,)
+    # authentication_classes = (JWTAuthentication,)
+
+    def post(self, request):
+        return ToolsHandler.handler_add_tool(request)

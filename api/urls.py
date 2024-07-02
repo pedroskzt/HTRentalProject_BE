@@ -6,7 +6,8 @@ from api.Views.ToolsView import (GetAllTools,
                                  GetToolsModelById,
                                  GetTool,
                                  GetToolsByCategory,
-                                 GetToolsHistoryByUser
+                                 GetToolsHistoryByUser,
+                                 AddTool
                                  )
 
 urlpatterns = [
@@ -16,6 +17,7 @@ urlpatterns = [
     path('Tools/Get/All', GetAllTools.as_view()),
     path('Tools/Get/<int:tool_id>', GetTool.as_view(), name='get_tool_by_id'),
     path('Tools/History/Get/ByUser', GetToolsHistoryByUser.as_view()),
+    path('Tools/Add', AddTool.as_view()),
 
 ]
 
