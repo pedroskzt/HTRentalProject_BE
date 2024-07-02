@@ -1,3 +1,4 @@
+from django.contrib.auth.password_validation import validate_password
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -52,7 +53,6 @@ class UserHandler:
             return Response("Error occuned during registration flow.", status=status.HTTP_400_BAD_REQUEST)
         return Response("User registration was successful.", status=status.HTTP_201_CREATED)
 
-
     @staticmethod
     def handler_user_update(request_data, user):
         """
@@ -90,30 +90,33 @@ class UserHandler:
                 return Response(serialized_user.data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'user_error': "Something went wrong, please try again later or contact support.",
-                                "dev_error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-            
-        return Response({'user_error': "No user was found."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                             "dev_error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+        return Response({'user_error': "No user was found."}, status=status.HTTP_400_BAD_REQUEST)
 
     @staticmethod
     def handler_user_change_password(request_data, user):
         """
-        Handler for changing user password
-
+        Handler for changing user password.
+        Password requirements:
+        Must have at least 8 characters
+        Must contain at least 1 number
+        Must contain at least 1 letter
+        Must contain at least 1 special character
+        Cannot match one of the user attributes (first_name, last_name, email)
         :param user:
         :param request_data:
         :return: success message
         """
+        try:
+            if "password" not in request_data or request_data.get('password') is None:
+                return Response("Password must be passed in and cannot be null or empty",
+                                status=status.HTTP_400_BAD_REQUEST)
 
-        if not "password" in request_data or request_data.get('password') is None:
-            return Response("Password must be passed in and cannot be null or empty", status = status.HTTP_400_BAD_REQUEST)
-
-        UserHelper.validate_password(request_data.get('password'))
-
-        if user:
+            # If any of the validations fail, an exception will be raised
+            validate_password(request_data.get('password'))
             user.set_password(request_data.get('password'))
 
             return Response("Password has been updated successfully.", status=status.HTTP_200_OK)
-        else:
-            return Response(validated_data.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+        except Exception as e:
+            return Response(e, status=status.HTTP_400_BAD_REQUEST)
