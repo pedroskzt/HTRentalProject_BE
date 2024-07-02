@@ -14,7 +14,7 @@ class CustomError:
         "GE-0": ("Exception Raised:", "Something went wrong, please try again later or contact support."),
         "TC-0": ("Tool Category not found. Exception raised:", "Category not found."),
         "TC-1": ("No tools was found for this category. Exception raised:", "No tools found for this category."),
-        "TC-2": ("Missing category name parameter. Exception raised:", "Missing category name on request."),
+        "TC-2": ("Missing category parameter. Exception raised:", "Missing category on request."),
         "TM-0": ("Model not found. Exception raised:", "No model was found for this id."),
         "TM-2": ("Missing category name parameter. Exception raised:", "Missing category name on request."),
 
