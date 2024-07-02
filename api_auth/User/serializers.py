@@ -49,3 +49,11 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Phone number cannot be empty')
 
         return value
+
+
+
+class UserInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name', 'address', 'phone_number', 'email')
+    
