@@ -1,7 +1,9 @@
+from django.db.models import F, Count, Q
+
 from api.Models.tools_category_model import ToolsCategory
+from api.Models.tools_history_model import ToolsHistory
 from api.Models.tools_model import Tools
 from api.Models.tools_model import ToolsModel
-from api.Models.tools_history_model import ToolsHistory
 
 
 class ToolsHelper:
@@ -18,10 +20,19 @@ class ToolsHelper:
     def get_all_tools_models_objects():
         """
         Get all tools models objects.
-        :return:
+        :return: ToolsModel queryset
         """
         return ToolsModel.objects.all()
-    
+
+    @staticmethod
+    def get_model_by_id(model_id):
+        """
+        Get a tools model by id.
+        :param model_id:
+        :return: ToolsModel queryset
+        """
+        return ToolsModel.objects.filter(id=model_id)
+
     @staticmethod
     def get_tool_by_id(id):
         """
@@ -29,14 +40,18 @@ class ToolsHelper:
         :return:
         """
         return Tools.objects.get(id=id)
-        
+
     @staticmethod
-    def get_tools_by_category(category):
+    def get_tool_category_by_name(category_name):
+        return ToolsCategory.objects.filter(name=category_name)
+
+    @staticmethod
+    def get_tools_models_by_category(category):
         """
-        Get all tools models objects.
+        Get all tools models objects of the corresponding category.
         :return:
         """
-        return Tools.objects.filter(model__category=category)
+        return ToolsModel.objects.filter(category=category)
 
     @staticmethod
     def get_tools_history_by_user(user):
@@ -52,7 +67,26 @@ class ToolsHelper:
         """
         Get model and category information related to each tool on the queryset.
         This method is mainly to optimize the serialization process.
-        :param queryset:
+        :param ToolsHistory queryset:
         :return:
         """
         return queryset.select_related('tool', 'tool__model', 'tool__model__category')
+
+    @staticmethod
+    def get_related_tools_models(queryset):
+        """
+        Get category information related to each model/branch on the queryset.
+        This method is mainly to optimize the serialization process.
+        :param ToolsModel queryset:
+        :return:
+        """
+        return queryset.select_related('category')
+
+    @staticmethod
+    def count_available_tools_by_model(queryset):
+        """
+        Add am amount_available field on the queryset with the count of available tools for each model on the queryset.
+        :param ToolsModel queryset:
+        :return:
+        """
+        return queryset.annotate(amount_available=Count(F("tools__id"), filter=Q(tools__available=True)))
