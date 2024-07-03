@@ -42,8 +42,8 @@ class ToolsHelper:
         return Tools.objects.get(id=id)
 
     @staticmethod
-    def get_tool_category_by_name(category_name):
-        return ToolsCategory.objects.filter(name=category_name)
+    def get_tool_category_by_id(category_id):
+        return ToolsCategory.objects.filter(pk=category_id)
 
     @staticmethod
     def get_tools_models_by_category(category):
@@ -91,6 +91,13 @@ class ToolsHelper:
         """
         return queryset.annotate(amount_available=Count(F("tools__id"), filter=Q(tools__available=True)))
 
+    @staticmethod
+    def get_all_categories():
+        """
+        Return a queryset of all ToolsCategory objects.
+        :return:
+        """
+        return ToolsCategory.objects.all()
     @staticmethod
     def check_tool_exists(model, brand):
         """

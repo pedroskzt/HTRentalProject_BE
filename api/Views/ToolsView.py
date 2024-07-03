@@ -46,8 +46,8 @@ class GetToolsByCategory(APIView):
     View responsible for returning a list of tools given a category.
     """
 
-    def get(self, request):
-        return ToolsHandler.handler_get_tools_by_category(request)
+    def get(self, request, category_id):
+        return ToolsHandler.handler_get_tools_by_category(category_id)
 
 
 class GetToolsHistoryByUser(APIView):
@@ -62,6 +62,15 @@ class GetToolsHistoryByUser(APIView):
     def get(self, request):
         return ToolsHandler.handler_get_tools_history_by_user(request.user)
 
+class GetAllCategories(APIView):
+    """
+        View responsible for returning a list of all categories.
+        """
+
+    def get(self, request):
+        return ToolsHandler.handler_get_all_categories()
+   
+   
 class AddTool(APIView):
     """
     View responsible for adding a tool if the given brand and model doesn't already exist.
