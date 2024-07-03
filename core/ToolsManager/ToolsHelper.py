@@ -90,3 +90,13 @@ class ToolsHelper:
         :return:
         """
         return queryset.annotate(amount_available=Count(F("tools__id"), filter=Q(tools__available=True)))
+
+    @staticmethod
+    def check_tool_exists(model, brand):
+        """
+        Returns true if tool with given model, brand exists, otherwise false.
+        :param model:
+        :param brand:
+        :return: boolean
+        """
+        return ToolsModel.objects.filter(model=model, brand=brand)

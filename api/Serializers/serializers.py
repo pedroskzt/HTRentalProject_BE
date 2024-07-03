@@ -14,7 +14,7 @@ class ToolsSerializer(ModelSerializer):
 
 
 class ToolsModelSerializer(ModelSerializer):
-    amount_available = serializers.IntegerField(min_value=0, default=0)
+    amount_available = serializers.IntegerField(min_value=0, default=0, read_only=True)
 
     class Meta:
         model = ToolsModel

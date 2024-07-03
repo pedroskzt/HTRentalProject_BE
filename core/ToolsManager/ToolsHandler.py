@@ -116,21 +116,22 @@ class ToolsHandler:
     @staticmethod
     def handler_add_tool(request):
         try:
-            tool_exists = ToolsHelper.check_tool_exists(request.get("model"), request.get("brand"))
-            if not tool_exists:
-                new_tool = ToolsSerializer(data=request)
-                if new_tool.is_valid():
+            new_tool = ToolsModelSerializer(data=request)
+            if new_tool.is_valid():
+                tool_exists = ToolsHelper.check_tool_exists(request.get("model"), request.get("brand"))
+                if not tool_exists:
                     new_tool.save()
                 else:
-                    return Response(new_tool.errors, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({'user_error': "Tool cannot be added to the database. It already exists.",
+                                    "dev_error": "Tool cannot be added to the database. It already exists."},
+                                    status=status.HTTP_400_BAD_REQUEST)
             else:
-                return Response({'user_error': "Tool cannot be added to the database. It already exists.",
-                                 "dev_error": "Tool cannot be added to the database. It already exists."},
-                                status=status.HTTP_400_BAD_REQUEST)
+                return Response(new_tool.data, status=status.HTTP_400_BAD_REQUEST)
+                
 
         except Exception as e:
             return Response({'user_error': "Something went wrong, please try again later or contact support.",
                              "dev_error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        return Response("Tool was successfully added.", status=status.HTTP_200_OK)
+        return Response("Tool was successfully added.", status=status.HTTP_201_CREATED)
 
