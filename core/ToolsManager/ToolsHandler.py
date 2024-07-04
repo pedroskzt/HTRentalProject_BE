@@ -129,7 +129,8 @@ class ToolsHandler:
                 new_tool_model = ToolsModelSerializer(data=request)
 
                 if new_tool_model.is_valid():
-                    tool_model = new_tool_model.save()
+                    new_tool_model.save()
+                    tool_model = new_tool_model.data
 
                 else:
                     return Response({'user_error': "Tool model cannot be added to the database.",
@@ -139,7 +140,7 @@ class ToolsHandler:
             new_tool = ToolsSerializer(data={"model": tool_model})
 
             if new_tool.is_valid():
-                tool_model = new_tool.save()
+                new_tool.save()
 
             else:
                 return Response({'user_error': "Tool cannot be added to the database.",
@@ -151,5 +152,42 @@ class ToolsHandler:
             return Response({'user_error': "Something went wrong, please try again later or contact support.",
                              "dev_error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        return Response("Tool was successfully added.", status=status.HTTP_201_CREATED)
+        return Response(new_tool.data, status=status.HTTP_201_CREATED)
+    
+    @staticmethod
+    def handler_update_tool(tool_id, request):
+        try:
+            tool_model = ToolsHelper.get_tool_model(request.get("model"), request.get("brand"))
+
+            if not tool_model: # tool model doesnt exist, create one
+                new_tool_model = ToolsModelSerializer(data=request)
+
+                if new_tool_model.is_valid():
+                    tool_model = new_tool_model.save()
+
+                else:
+                    return Response({'user_error': "Tool model cannot be added to the database.",
+                                    "dev_error": new_tool_model.errors},
+                                    status=status.HTTP_400_BAD_REQUEST)
+                
+            tool = ToolsHelper.get_tool_by_id(tool_id)
+
+            if not tool:
+                return Response({'user_error': "Tool cannot be updated because it doesn't exist.","dev_error": tool_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            
+            tool_serializer = ToolsSerializer(tool, data={"model": tool_model}, partial=True)
+                
+            if tool_serializer.is_valid():
+                tool_serializer.save()
+            else:
+                return Response({'user_error': "Tool cannot be updated.",
+                                    "dev_error": tool_serializer.errors},
+                                    status=status.HTTP_400_BAD_REQUEST)
+
+
+        except Exception as e:
+            return Response({'user_error': "Something went wrong, please try again later or contact support.",
+                             "dev_error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response("Tool was successfully updated.", status=status.HTTP_201_CREATED)
 

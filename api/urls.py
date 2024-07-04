@@ -8,7 +8,8 @@ from api.Views.ToolsView import (GetAllTools,
                                  GetToolsByCategory,
                                  GetToolsHistoryByUser,
                                  GetAllCategories,
-                                 AddTool
+                                 AddTool,
+                                 UpdateTool
                                  )
 
 urlpatterns = [
@@ -20,6 +21,7 @@ urlpatterns = [
     path('Tools/History/Get/ByUser', GetToolsHistoryByUser.as_view()),
     path('Tools/Category/Get/All', GetAllCategories.as_view()),
     path('Tools/Add', AddTool.as_view()),
+    path('Tools/Update/<int:tool_id>', UpdateTool.as_view())
 
 ]
 
