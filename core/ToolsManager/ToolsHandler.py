@@ -2,6 +2,7 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from api.Models.tools_model_model import ToolsModel
+from api.Models.tools_model import Tools
 from api.Serializers.serializers import (ToolsSerializer, ToolsModelSerializer, ToolsHistorySerializer,
                                          ToolsCategorySerializer)
 from core.CustomErrors.CustomErrors import CustomError
@@ -122,18 +123,29 @@ class ToolsHandler:
     @staticmethod
     def handler_add_tool(request):
         try:
-            new_tool = ToolsModelSerializer(data=request)
-            if new_tool.is_valid():
-                tool_exists = ToolsHelper.check_tool_exists(request.get("model"), request.get("brand"))
-                if not tool_exists:
-                    new_tool.save()
+            tool_model = ToolsHelper.get_tool_model(request.get("model"), request.get("brand"))
+
+            if not tool_model: # tool model doesnt exist, create one
+                new_tool_model = ToolsModelSerializer(data=request)
+
+                if new_tool_model.is_valid():
+                    tool_model = new_tool_model.save()
+
                 else:
-                    return Response({'user_error': "Tool cannot be added to the database. It already exists.",
-                                    "dev_error": "Tool cannot be added to the database. It already exists."},
+                    return Response({'user_error': "Tool model cannot be added to the database.",
+                                    "dev_error": new_tool_model.errors},
                                     status=status.HTTP_400_BAD_REQUEST)
-            else:
-                return Response(new_tool.data, status=status.HTTP_400_BAD_REQUEST)
                 
+            new_tool = ToolsSerializer(data={"model": tool_model})
+
+            if new_tool.is_valid():
+                tool_model = new_tool.save()
+
+            else:
+                return Response({'user_error': "Tool cannot be added to the database.",
+                                    "dev_error": new_tool.errors},
+                                    status=status.HTTP_400_BAD_REQUEST)
+
 
         except Exception as e:
             return Response({'user_error': "Something went wrong, please try again later or contact support.",
