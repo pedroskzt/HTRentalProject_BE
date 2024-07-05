@@ -117,3 +117,42 @@ class ToolsHandler:
         category_objects = ToolsHelper.get_all_categories()
         category_serializer = ToolsCategorySerializer(category_objects, many=True)
         return Response(category_serializer.data, status=status.HTTP_200_OK)
+
+    @staticmethod
+    def handler_add_tool(request):
+        try:
+            tool_model = ToolsHelper.get_tool_model(request.get("model"), request.get("brand"))
+
+            if not tool_model:  # tool model doesnt exist, create one
+                tool_category = ToolsHelper.get_tool_category_by_id(request.get("category"))
+                if tool_category.exists() is False:
+                    return Response(CustomError.get_error_by_code("TC-0"), status=status.HTTP_400_BAD_REQUEST)
+                tool_category = tool_category.first()
+
+                new_tool_model = ToolsModelSerializer(data=request, context={"category": tool_category})
+                if new_tool_model.is_valid():
+                    tool_model = new_tool_model.save()
+
+                else:
+                    return Response({'user_error': "Tool model cannot be added to the database.",
+                                     "dev_error": new_tool_model.errors},
+                                    status=status.HTTP_400_BAD_REQUEST)
+            else:
+                tool_model = tool_model.first()
+
+            context = {"model": tool_model}
+            new_tool = ToolsSerializer(data={}, context=context)
+            if new_tool.is_valid():
+                new_tool.save()
+
+            else:
+                return Response({'user_error': "Tool cannot be added to the database.",
+                                 "dev_error": new_tool.errors},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+
+        except Exception as e:
+            return Response({'user_error': "Something went wrong, please try again later or contact support.",
+                             "dev_error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response("Tool was successfully added.", status=status.HTTP_201_CREATED)

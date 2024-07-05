@@ -98,3 +98,13 @@ class ToolsHelper:
         :return:
         """
         return ToolsCategory.objects.all()
+    
+    @staticmethod
+    def get_tool_model(model, brand):
+        """
+        Returns tool model if given model, brand exists, otherwise none.
+        :param model:
+        :param brand:
+        :return: toolsModel or None
+        """
+        return ToolsModel.objects.filter(model=model, brand=brand)

@@ -69,3 +69,15 @@ class GetAllCategories(APIView):
 
     def get(self, request):
         return ToolsHandler.handler_get_all_categories()
+   
+   
+class AddTool(APIView):
+    """
+    View responsible for adding a tool if the given brand and model doesn't already exist.
+    """
+
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (JWTAuthentication,)
+
+    def post(self, request):
+        return ToolsHandler.handler_add_tool(request=request.data)
