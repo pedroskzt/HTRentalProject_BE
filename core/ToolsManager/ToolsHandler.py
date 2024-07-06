@@ -143,7 +143,7 @@ class ToolsHandler:
             context = {"model": tool_model}
             new_tool = ToolsSerializer(data={}, context=context)
             if new_tool.is_valid():
-                tool_model = new_tool.save()
+                new_tool.save()
 
             else:
                 return Response({'user_error': "Tool cannot be added to the database.",

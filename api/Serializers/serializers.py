@@ -11,8 +11,13 @@ class ToolsSerializer(ModelSerializer):
     class Meta:
         model = Tools
         fields = '__all__'
-        depth = 2
+        depth = 3
 
+    def create(self, validated_data):
+        validated_data['model'] = self.context.get('model')
+        tool = Tools(**validated_data)
+        tool.save()
+        return tool
 
     def update(self, instance, validated_data):
         instance.available = validated_data.get('available', instance.available)
@@ -27,6 +32,12 @@ class ToolsModelSerializer(ModelSerializer):
         model = ToolsModel
         fields = '__all__'
         depth = 1
+
+    def create(self, validated_data):
+        validated_data['category'] = self.context.get('category')
+        tools_model = ToolsModel(**validated_data)
+        tools_model.save()
+        return tools_model
 
 
 class ToolsHistorySerializer(ModelSerializer):
