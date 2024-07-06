@@ -94,7 +94,7 @@ class ToolsHandler:
             return Response(tools_serializer.data, status=status.HTTP_200_OK)
 
         except Exception as e:
-            return Response(CustomError.get_error_by_code("GE-0", str(e)), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(CustomError.get_error_by_code("GE-0", str(e)), status=status.HTTP_400_BAD_REQUEST)
 
     @staticmethod
     def handler_get_tools_history_by_user(user):
@@ -153,6 +153,64 @@ class ToolsHandler:
 
         except Exception as e:
             return Response({'user_error': "Something went wrong, please try again later or contact support.",
-                             "dev_error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                             "dev_error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response("Tool was successfully added.", status=status.HTTP_201_CREATED)
+
+    @staticmethod
+    def handler_update_tool(tool_id, request):
+        try:
+            tool = ToolsHelper.get_tool_by_id(tool_id)
+            if not tool:
+                return Response({'user_error': "Tool cannot be updated because it doesn't exist.",
+                                 "dev_error": "Tool not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+            tool_data = {
+                "available": request.get("available")
+            }
+            context = {"model": tool.model}
+
+            if request.get("brand") and request.get("model"):
+                tool_model = ToolsHelper.get_tool_model(request.get("model"), request.get("brand"))
+                if tool_model.exists() is False:  # tool model doesn't exist, create one
+                    if request.get('category') is None:
+                        return Response(CustomError.get_error_by_code("TC-2"), status.HTTP_400_BAD_REQUEST)
+
+                    tool_category = ToolsHelper.get_tool_category_by_id(request.get('category'))
+                    if tool_category.exists() is False:
+                        return Response(CustomError.get_error_by_code("TC-0"), status.HTTP_400_BAD_REQUEST)
+                    tool_category = tool_category.first()
+
+                    new_tool_model = ToolsModelSerializer(data=request, context={'category': tool_category})
+                    if new_tool_model.is_valid():
+                        tool_model = new_tool_model.save()
+
+                    else:
+                        return Response({'user_error': "Tool model cannot be added to the database.",
+                                         "dev_error": new_tool_model.errors},
+                                        status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    tool_model = tool_model.first()
+
+                    if tool.model == tool_model:  # Update the tools model values
+                        tool_model_serializer = ToolsModelSerializer(tool_model, data=request)
+                        if tool_model_serializer.is_valid():
+                            tool_model_serializer.save()
+                        else:
+                            return Response(CustomError.get_error_by_code("TM-1"), status.HTTP_400_BAD_REQUEST)
+                context['model'] = tool_model
+
+            tool_serializer = ToolsSerializer(tool, data=tool_data, context=context)
+            if tool_serializer.is_valid():
+                tool_serializer.save()
+            else:
+                return Response({'user_error': "Tool cannot be updated.",
+                                 "dev_error": tool_serializer.errors},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+
+        except Exception as e:
+            return Response({'user_error': "Something went wrong, please try again later or contact support.",
+                             "dev_error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response("Tool was successfully updated.", status=status.HTTP_201_CREATED)
