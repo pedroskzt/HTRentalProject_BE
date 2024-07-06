@@ -16,6 +16,7 @@ class CustomError:
         "TC-1": ("No tools was found for this category. Exception raised:", "No tools found for this category."),
         "TC-2": ("Missing category parameter. Exception raised:", "Missing category on request."),
         "TM-0": ("Model not found. Exception raised:", "No model was found for this id."),
+        "TM-1": ("Failed to update ToolsModel. Exception raised:", "Failed to update ToolsModel."),
         "TM-2": ("Missing category name parameter. Exception raised:", "Missing category name on request."),
 
     }

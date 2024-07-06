@@ -14,6 +14,12 @@ class ToolsSerializer(ModelSerializer):
         depth = 2
 
 
+    def update(self, instance, validated_data):
+        instance.available = validated_data.get('available', instance.available)
+        instance.model = self.context.get('model', instance.model)
+        instance.save()
+        return instance
+
 class ToolsModelSerializer(ModelSerializer):
     amount_available = serializers.IntegerField(min_value=0, default=0, read_only=True)
 
