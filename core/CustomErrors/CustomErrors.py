@@ -18,11 +18,13 @@ class CustomError:
         "TM-0": ("Model not found. Exception raised:", "No model was found for this id."),
         "TM-1": ("Failed to update ToolsModel. Exception raised:", "Failed to update ToolsModel."),
         "TM-2": ("Missing category name parameter. Exception raised:", "Missing category name on request."),
+        "TH-0": ("Error while serializing Tool History. Exception raised:", "Something went wrong, please try again later or contact support."),
         "PRC-0": ("Error while serializing Rental Cart. Exception raised:", "Something went wrong, please try again later or contact support."),
         "PRC-1": ("Same tools model with different rental_dates. Exception raised:", "Same Tool Model can only be rented for the same amount of days."),
         "PRC-2": ("No rental cart was found for this user. Exception raised:", "No rental cart was found for this user."),
         "PRC-3": ("No items in user rental cart. Exception raised:", "User Cart is Empty."),
         "POC-0": ("Error while serializing Rental Order. Exception raised:", "Something went wrong, please try again later."),
+        "POC-1": ("Rental Order Not Found. Exception raised:", "Rental Order not found. Go back to the rental cart and try again."),
 
     }
 
