@@ -11,6 +11,7 @@ from api.Views.ToolsView import (GetAllTools,
                                  AddTool,
                                  UpdateTool
                                  )
+from api.Views.ChatBotViews import GetChatBotResponse
 
 urlpatterns = [
     path('Tools/Models/Get/All', GetAllToolsModels.as_view()),
@@ -21,7 +22,8 @@ urlpatterns = [
     path('Tools/History/Get/ByUser', GetToolsHistoryByUser.as_view()),
     path('Tools/Category/Get/All', GetAllCategories.as_view()),
     path('Tools/Add', AddTool.as_view()),
-    path('Tools/Update/<int:tool_id>', UpdateTool.as_view())
+    path('Tools/Update/<int:tool_id>', UpdateTool.as_view()),
+    path('chat-bot/input', GetChatBotResponse.as_view())
 
 ]
 
