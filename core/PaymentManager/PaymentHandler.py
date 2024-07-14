@@ -3,7 +3,7 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.response import Response
 
-from api.Serializers.serializers import ToolsModelSerializer
+from api.Serializers.serializers import LightToolsHistorySerializer
 from core.CustomErrors.CustomErrors import CustomError
 from core.PaymentManager.PaymentHelper import PaymentHelper
 from core.ToolsManager.ToolsHelper import ToolsHelper
@@ -74,17 +74,25 @@ class PaymentHandler:
 
     @staticmethod
     def handler_get_checkout_information(user):
+        """
+        Get all information from user cart and uses it to create a RentalOrder. Validates tools requested quantity and
+        availability, and return JSON with rental order details.
+        :param user: User Object
+        :return: JSON RentalOrder serialized
+        """
         try:
             # Get user rental cart and check if it exists.
             rental_cart = PaymentHelper.get_rental_cart_by_user(user)
             if rental_cart.exists() is False:
-                return Response(CustomError.get_error_by_code("PRC-2", {"User": user}), status=status.HTTP_400_BAD_REQUEST)
+                return Response(CustomError.get_error_by_code("PRC-2", {"User": user}),
+                                status=status.HTTP_400_BAD_REQUEST)
             rental_cart = rental_cart.first()
 
             # Get rental cart items and check if there's any item in the cart.
             rental_cart_items = rental_cart.tools.through.objects.all()
             if rental_cart_items.exists() is False:
-                return Response(CustomError.get_error_by_code("PRC-3", {"User": user}), status=status.HTTP_400_BAD_REQUEST)
+                return Response(CustomError.get_error_by_code("PRC-3", {"User": user}),
+                                status=status.HTTP_400_BAD_REQUEST)
 
             # Get all available tools for the models in cart
             models = {}
@@ -136,7 +144,8 @@ class PaymentHandler:
                         if items_per_model[model] == cart_quantity:
                             continue
                         if items_per_model[model] < cart_quantity:
-                            quantity_error_msg[model] = f"Not enough tools. There are only {items_per_model[model]} of this tool available."
+                            quantity_error_msg[
+                                model] = f"Not enough tools. There are only {items_per_model[model]} of this tool available."
                             continue
 
                     if cart_quantity > items_per_model[model]:
@@ -152,7 +161,8 @@ class PaymentHandler:
                         amount_to_add = cart_quantity
                     else:
                         amount_to_add = available
-                        quantity_error_msg[model] = f"Not enough tools. There are only {available} of this tool available."
+                        quantity_error_msg[
+                            model] = f"Not enough tools. There are only {available} of this tool available."
 
                 # Add more tools to the order data list.
 
@@ -187,7 +197,8 @@ class PaymentHandler:
             rental_order_items = PaymentHelper.get_all_rental_order_items(rental_order)
             rental_order.sub_total = 0
 
-            for model in rental_order_items.values('tool__model_id', 'time_rented', 'tool__model__price').annotate(counter=Count('tool__model_id')):
+            for model in rental_order_items.values('tool__model_id', 'time_rented', 'tool__model__price').annotate(
+                    counter=Count('tool__model_id')):
                 model_id = model['tool__model_id']
                 counter = model['counter']
                 price = model['tool__model__price']
@@ -215,3 +226,51 @@ class PaymentHandler:
 
         except Exception as e:
             return Response(CustomError.get_error_by_code("GE-0", e), status=status.HTTP_400_BAD_REQUEST)
+
+    @staticmethod
+    def handler_make_payment(user):
+        """
+        Concludes the Rental process. Clears the RentalCart, set the RentalOrder as completed
+        and create history entries for each tool.
+        :param user: User Object
+        :return: Status 202
+        """
+        try:
+            # Get user rental order and check if it exists.
+            rental_order = PaymentHelper.get_rental_orders_by_user(user)
+            if rental_order.exists() is False:
+                return Response(CustomError.get_error_by_code("POC-1", {"user": user}),
+                                status=status.HTTP_400_BAD_REQUEST)
+            rental_order = rental_order.latest('date_created')
+
+            # Log the rental history of the tools.
+            tools_rented = []
+            for item in rental_order.tools.through.objects.all():
+                start_date = timezone.now()
+                end_date = timezone.now() + timezone.timedelta(days=item.time_rented)
+                tools_rented.append({"tool": item.tool.pk,
+                                     "user": user.pk,
+                                     "rent_start_date": start_date,
+                                     "rent_end_date": end_date})
+
+            tool_history_ser = LightToolsHistorySerializer(data=tools_rented, many=True)
+            if tool_history_ser.is_valid():
+                tool_history_ser.save()
+            else:
+                return Response(CustomError.get_error_by_code("TH-0", tool_history_ser.errors),
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            # Set the rental order as COMPLETED and the Completion datetime
+            rental_order.status = rental_order.COMPLETED
+            rental_order.date_completed = timezone.now()
+            rental_order.save()
+
+            # Get user rental cart and if still exists, delete it.
+            rental_cart = PaymentHelper.get_rental_cart_by_user(user)
+            if rental_cart.exists():
+                rental_cart.first().delete()
+
+            return Response(status=status.HTTP_202_ACCEPTED)
+
+        except Exception as e:
+            return Response(CustomError.get_error_by_code("GE-0", e), status.HTTP_400_BAD_REQUEST)
