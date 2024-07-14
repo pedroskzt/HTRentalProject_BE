@@ -20,6 +20,9 @@ class CustomError:
         "TM-2": ("Missing category name parameter. Exception raised:", "Missing category name on request."),
         "PRC-0": ("Error while serializing Rental Cart. Exception raised:", "Something went wrong, please try again later or contact support."),
         "PRC-1": ("Same tools model with different rental_dates. Exception raised:", "Same Tool Model can only be rented for the same amount of days."),
+        "PRC-2": ("No rental cart was found for this user. Exception raised:", "No rental cart was found for this user."),
+        "PRC-3": ("No items in user rental cart. Exception raised:", "User Cart is Empty."),
+        "POC-0": ("Error while serializing Rental Order. Exception raised:", "Something went wrong, please try again later."),
 
     }
 
