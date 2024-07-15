@@ -18,6 +18,8 @@ class CustomError:
         "TM-0": ("Model not found. Exception raised:", "No model was found for this id."),
         "TM-1": ("Failed to update ToolsModel. Exception raised:", "Failed to update ToolsModel."),
         "TM-2": ("Missing category name parameter. Exception raised:", "Missing category name on request."),
+        "PRC-0": ("Error while serializing Rental Cart. Exception raised:", "Something went wrong, please try again later or contact support."),
+        "PRC-1": ("Same tools model with different rental_dates. Exception raised:", "Same Tool Model can only be rented for the same amount of days."),
 
     }
 
