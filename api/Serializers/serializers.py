@@ -25,6 +25,7 @@ class ToolsSerializer(ModelSerializer):
         instance.save()
         return instance
 
+
 class ToolsModelSerializer(ModelSerializer):
     amount_available = serializers.IntegerField(min_value=0, default=0, read_only=True)
 
@@ -45,6 +46,18 @@ class ToolsHistorySerializer(ModelSerializer):
         model = ToolsHistory
         exclude = ('user',)
         depth = 3
+
+
+class LightToolsHistorySerializer(ModelSerializer):
+    class Meta:
+        model = ToolsHistory
+        fields = '__all__'
+    # def create(self, validated_data):
+    #     validated_data['user'] = self.context['user']
+    #     validated_data['tool'] = self.context['tool']
+    #     tools_history = ToolsHistory(**validated_data)
+    #     tools_history.save()
+    #     return tools_history
 
 
 class ToolsCategorySerializer(ModelSerializer):
