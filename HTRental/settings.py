@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'api.apps.ApiConfig',
-    "api_auth.apps.ApiAuthConfig"
+    "api_auth.apps.ApiAuthConfig",
+    "payment.apps.PaymentConfig"
 
 ]
 
