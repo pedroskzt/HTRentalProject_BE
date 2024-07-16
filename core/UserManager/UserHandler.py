@@ -116,6 +116,7 @@ class UserHandler:
             # If any of the validations fail, an exception will be raised
             validate_password(request_data.get('password'))
             user.set_password(request_data.get('password'))
+            user.save()
 
             return Response("Password has been updated successfully.", status=status.HTTP_200_OK)
         except Exception as e:
