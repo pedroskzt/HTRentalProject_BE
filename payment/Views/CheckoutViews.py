@@ -7,7 +7,7 @@ from core.PaymentManager.PaymentHandler import PaymentHandler
 
 class GetCheckoutInformation(APIView):
     """
-    View responsible for adding a tool model to the rental cart.
+    View responsible creating the rental order and return the checkout information.
     """
     permission_classes = (IsAuthenticated,)
     authentication_classes = (JWTAuthentication,)

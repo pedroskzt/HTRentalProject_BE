@@ -1,5 +1,8 @@
 from django.utils import timezone
+from rest_framework import status
+from rest_framework.response import Response
 
+from core.CustomErrors.CustomErrors import CustomError
 from payment.models.rental_cart_model import RentalCart
 from payment.models.rental_cart_model import RentalCartItem
 from payment.models.rental_order_model import RentalOrder
@@ -47,3 +50,20 @@ class PaymentHelper:
             else:
                 return rental_order
         return False
+
+    @staticmethod
+    def validate_rental_cart(user):
+        # Check if user has items on the rental cart.
+        rental_cart = PaymentHelper.get_rental_cart_by_user(user)
+        if rental_cart.exists() is False:
+            return False, Response(CustomError.get_error_by_code("PRC-2", rental_cart.errors),
+                                   status=status.HTTP_400_BAD_REQUEST)
+        rental_cart = rental_cart.first()
+
+        # Check if the existing rental cart has expired
+        if (timezone.now() - rental_cart.date_updated).days > 0:
+            rental_cart.delete()
+            return False, Response(CustomError.get_error_by_code("PRC-2", "Rental Cart Expired."),
+                                   status=status.HTTP_400_BAD_REQUEST)
+
+        return rental_cart, Response(status=status.HTTP_200_OK)
