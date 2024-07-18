@@ -1,4 +1,4 @@
-from django.db.models import Count
+from django.db.models import Count, F
 from rest_framework.serializers import ModelSerializer, SerializerMethodField
 
 from payment.models.rental_cart_model import RentalCart, RentalCartItem
@@ -6,9 +6,19 @@ from payment.models.rental_order_model import RentalOrder, RentalOrderItem
 
 
 class RentalCartSerializer(ModelSerializer):
+    tools = SerializerMethodField(read_only=True)
+
     class Meta:
         model = RentalCart
         fields = '__all__'
+
+    def get_tools(self, obj):
+        tools_models = obj.tools.through.objects.filter(rental_cart_id=obj.pk).values()
+        if tools_models:
+            return list(
+                tools_models.annotate(tools_model_id=F('pk')).values('tools_model_id', 'quantity', 'rental_time'))
+        else:
+            return []
 
 
 class RentalCartItemSerializer(ModelSerializer):
@@ -34,7 +44,8 @@ class CheckoutSerializer(ModelSerializer):
 
     def get_tools_models(self, obj):
         error_list = self.context.get('error_list')
-        tools_models = obj.tools.through.objects.all().values("tool__model_id", "time_rented").annotate(
+        tools_models = obj.tools.through.objects.filter(rental_order_id=obj.pk).values("tool__model_id",
+                                                                                       "time_rented").annotate(
             quantity=Count("tool__model_id"))
 
         if error_list:

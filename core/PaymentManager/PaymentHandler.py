@@ -73,6 +73,58 @@ class PaymentHandler:
             return Response(CustomError.get_error_by_code("GE-0", e), status=status.HTTP_400_BAD_REQUEST)
 
     @staticmethod
+    def handler_get_rental_cart(user):
+        try:
+            # Check if user has items on the rental cart.
+            rental_cart, resp = PaymentHelper.validate_rental_cart(user)
+            if resp.status_code != status.HTTP_200_OK:
+                return resp
+
+            rental_cart_ser = RentalCartSerializer(rental_cart)
+            return Response(rental_cart_ser.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(CustomError.get_error_by_code("GE-0", e), status=status.HTTP_400_BAD_REQUEST)
+
+    @staticmethod
+    def handler_update_rental_cart(request_data, user):
+        try:
+            # Check if user has items on the rental cart.
+            rental_cart, resp = PaymentHelper.validate_rental_cart(user)
+            if resp.status_code != status.HTTP_200_OK:
+                rental_cart_ser = RentalCartSerializer(data={'user': user.pk})
+                if rental_cart_ser.is_valid():
+                    rental_cart = rental_cart_ser.save()
+                else:
+                    return Response(CustomError.get_error_by_code("PRC-0", rental_cart_ser.errors),
+                                    status=status.HTTP_400_BAD_REQUEST)
+
+            rental_cart_items = PaymentHelper.get_all_rental_cart_items(rental_cart)
+            updated_list = []
+            for index, item in enumerate(rental_cart_items.values()):
+                tools_model_id = str(item.get('tool_id'))
+                if tools_model_id in request_data:
+                    data = request_data.get(tools_model_id)
+                    if 'quantity' in data and data.get('quantity') == 0:
+                        rental_cart_items[index].delete()
+                        continue
+
+                    rental_cart_item_ser = RentalCartItemSerializer(instance=rental_cart_items[index], data=data,
+                                                                    partial=True)
+                    if rental_cart_item_ser.is_valid():
+                        updated_list.append(rental_cart_item_ser)
+                    else:
+                        return Response(CustomError.get_error_by_code("PRC-0", rental_cart_item_ser.errors),
+                                        status=status.HTTP_400_BAD_REQUEST)
+
+            for item in updated_list:
+                item.save()
+
+            rental_cart_ser = RentalCartSerializer(rental_cart)
+            return Response(rental_cart_ser.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(CustomError.get_error_by_code("GE-0", e), status=status.HTTP_400_BAD_REQUEST)
+
+    @staticmethod
     def handler_get_checkout_information(user):
         """
         Get all information from user cart and uses it to create a RentalOrder. Validates tools requested quantity and
