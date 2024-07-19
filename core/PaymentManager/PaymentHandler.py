@@ -178,7 +178,7 @@ class PaymentHandler:
                     return Response(CustomError.get_error_by_code("POC-0", rental_order_ser.errors),
                                     status=status.HTTP_400_BAD_REQUEST)
 
-            rental_order_items = rental_order.tools.through.filter(rental_order_id=rental_order.pk)
+            rental_order_items = rental_order.tools.through.objects.filter(rental_order_id=rental_order.pk)
             items_per_model = {}
             for model in rental_order_items.values('tool__model_id').annotate(counter=Count('tool__model_id')):
                 items_per_model[model['tool__model_id']] = model['counter']
@@ -218,7 +218,6 @@ class PaymentHandler:
                             model] = f"Not enough tools. There are only {available} of this tool available."
 
                 # Add more tools to the order data list.
-
                 for _ in range(amount_to_add):
                     tool = tools.pop()
                     order_data_list.append({
@@ -269,6 +268,7 @@ class PaymentHandler:
                         item.tool.available = True
                         item.tool.save()
                         item.delete()
+
                 # Calculate SubTotal
                 if cart_quantity > 0:
                     rental_order.sub_total += (cart_quantity * price * time_rented)
