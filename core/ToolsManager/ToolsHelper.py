@@ -36,10 +36,20 @@ class ToolsHelper:
     @staticmethod
     def get_tool_by_id(id):
         """
-        Get all tools models objects.
+        Get all tools objects.
         :return:
         """
         return Tools.objects.get(id=id)
+
+    @staticmethod
+    def get_tool_by_rental_order(rental_order):
+        """
+        Get all tools objects from a rental order.
+        :param rental_order:
+        :return: queryset of Tools
+        """
+        return Tools.objects.filter(rentalorderitem__rental_order=rental_order)
+
 
     @staticmethod
     def get_tool_category_by_id(category_id):
