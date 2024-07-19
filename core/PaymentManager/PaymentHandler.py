@@ -48,7 +48,8 @@ class PaymentHandler:
             else:
                 rental_cart = rental_cart.first()
 
-            rental_cart_item = rental_cart.tools.through.objects.filter(tool_id=tools_model.pk)
+            rental_cart_item = rental_cart.tools.through.objects.filter(rental_cart_id=rental_cart.pk,
+                                                                        tool_id=tools_model.pk)
             if rental_cart_item.exists():
                 rental_cart_item = rental_cart_item.first()
                 if rental_cart_item.rental_time != request_data.get('rental_time'):
@@ -141,7 +142,7 @@ class PaymentHandler:
             rental_cart = rental_cart.first()
 
             # Get rental cart items and check if there's any item in the cart.
-            rental_cart_items = rental_cart.tools.through.objects.all()
+            rental_cart_items = rental_cart.tools.through.objects.filter(rental_cart_id=rental_cart.pk)
             if rental_cart_items.exists() is False:
                 return Response(CustomError.get_error_by_code("PRC-3", {"User": user}),
                                 status=status.HTTP_400_BAD_REQUEST)
@@ -177,7 +178,7 @@ class PaymentHandler:
                     return Response(CustomError.get_error_by_code("POC-0", rental_order_ser.errors),
                                     status=status.HTTP_400_BAD_REQUEST)
 
-            rental_order_items = rental_order.tools.through.objects.all()
+            rental_order_items = rental_order.tools.through.filter(rental_order_id=rental_order.pk)
             items_per_model = {}
             for model in rental_order_items.values('tool__model_id').annotate(counter=Count('tool__model_id')):
                 items_per_model[model['tool__model_id']] = model['counter']
@@ -297,7 +298,7 @@ class PaymentHandler:
 
             # Log the rental history of the tools.
             tools_rented = []
-            for item in rental_order.tools.through.objects.all():
+            for item in rental_order.tools.through.objects.filter(rental_order_id=rental_order.pk):
                 start_date = timezone.now()
                 end_date = timezone.now() + timezone.timedelta(days=item.time_rented)
                 tools_rented.append({"tool": item.tool.pk,
