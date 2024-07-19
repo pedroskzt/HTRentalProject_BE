@@ -16,7 +16,7 @@ class RentalCartSerializer(ModelSerializer):
         tools_models = obj.tools.through.objects.filter(rental_cart_id=obj.pk).values()
         if tools_models:
             return list(
-                tools_models.annotate(tools_model_id=F('pk')).values('tools_model_id', 'quantity', 'rental_time'))
+                tools_models.annotate(tools_model_id=F('tool_id')).values('tools_model_id', 'quantity', 'rental_time'))
         else:
             return []
 
