@@ -3,6 +3,7 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from core.CustomErrors.CustomErrors import CustomError
+from core.ToolsManager.ToolsHelper import ToolsHelper
 from payment.models.rental_cart_model import RentalCart
 from payment.models.rental_cart_model import RentalCartItem
 from payment.models.rental_order_model import RentalOrder
@@ -44,10 +45,11 @@ class PaymentHelper:
             # Check if the most recent order is older than 1 day and Status is Opened. If so Cancel it.
             if rental_order.status == rental_order.OPEN and (timezone.now() - rental_order.date_created).days > 0:
                 # This order is too old, cancel it and make the items on it available.
-                rental_order.tools.through.objects.filter(rental_order_id=rental_order.pk).update(available=True)
+                tools = ToolsHelper.get_tool_by_rental_order(rental_order)
+                tools.update(available=True)
                 rental_order.status = rental_order.CANCELLED
                 rental_order.save()
-            else:
+            elif rental_order.status == rental_order.OPEN:
                 return rental_order
         return False
 
