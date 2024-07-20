@@ -1,9 +1,9 @@
 from django.db.models import F, Count, Q
 
-from api.Models.tools_category_model import ToolsCategory
-from api.Models.tools_history_model import ToolsHistory
-from api.Models.tools_model import Tools
-from api.Models.tools_model import ToolsModel
+from api.models.tools_category_model import ToolsCategory
+from api.models.tools_history_model import ToolsHistory
+from api.models.tools_model import Tools
+from api.models.tools_model import ToolsModel
 
 
 class ToolsHelper:

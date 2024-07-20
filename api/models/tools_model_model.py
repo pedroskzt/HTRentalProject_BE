@@ -1,12 +1,13 @@
 from django.db import models
 
-from api.Models.tools_category_model import ToolsCategory
+from api.models.tools_category_model import ToolsCategory
 
 
 class ToolsModel(models.Model):
     class Meta:
         unique_together = [["brand", "model"]]
 
+    tools_model_id = models.AutoField(primary_key=True)
     brand = models.CharField(max_length=50)
     model = models.CharField(max_length=50)
     name = models.CharField(max_length=50, unique=True)

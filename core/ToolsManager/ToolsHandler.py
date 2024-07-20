@@ -1,7 +1,7 @@
 from rest_framework import status
 from rest_framework.response import Response
 
-from api.Models.tools_model_model import ToolsModel
+from api.models.tools_model_model import ToolsModel
 from api.Serializers.serializers import (ToolsSerializer, ToolsModelSerializer, ToolsHistorySerializer,
                                          ToolsCategorySerializer)
 from core.CustomErrors.CustomErrors import CustomError
