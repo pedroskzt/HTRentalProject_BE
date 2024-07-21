@@ -47,6 +47,7 @@ class CustomError:
         "UE-1": ("Error while serializing User. Exception raised:", "Something went wrong, please try again later."),
         "UE-2": ("User not found. Exception raised:", "User not found."),
         "UE-3": ("Empty Password. Exception raised:", "Password must be passed in and cannot be null or empty."),
+        "CB-0": ("Empty User Input. Exception raised:", "Empty Input."),
     }
 
     @staticmethod
