@@ -23,7 +23,7 @@ urlpatterns = [
     path('Tools/Category/Get/All', GetAllCategories.as_view()),
     path('Tools/Add', AddTool.as_view()),
     path('Tools/Update/<int:tool_id>', UpdateTool.as_view()),
-    path('chat-bot/input', GetChatBotResponse.as_view())
+    path('ChatBot/Input', GetChatBotResponse.as_view())
 
 ]
 

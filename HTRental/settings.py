@@ -154,3 +154,8 @@ SIMPLE_JWT = {
 }
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+# GEMINI SETTINGS
+PROJECT_ID = os.environ.get('PROJECT_ID')
+REGION = os.environ.get('REGION')
+MODEL_NAME = os.environ.get('MODEL_NAME')
