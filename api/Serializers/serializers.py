@@ -1,10 +1,10 @@
 from rest_framework import serializers
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer, SlugRelatedField
 
-from api.Models.tools_category_model import ToolsCategory
-from api.Models.tools_history_model import ToolsHistory
-from api.Models.tools_model import Tools
-from api.Models.tools_model_model import ToolsModel
+from api.models.tools_category_model import ToolsCategory
+from api.models.tools_history_model import ToolsHistory
+from api.models.tools_model import Tools
+from api.models.tools_model_model import ToolsModel
 
 
 class ToolsSerializer(ModelSerializer):
@@ -42,9 +42,11 @@ class ToolsModelSerializer(ModelSerializer):
 
 
 class ToolsHistorySerializer(ModelSerializer):
+    rental_order = SlugRelatedField(read_only=True, slug_field='pk')
+    user = SlugRelatedField(read_only=True, slug_field='pk')
     class Meta:
         model = ToolsHistory
-        exclude = ('user',)
+        fields = '__all__'
         depth = 3
 
 
@@ -52,12 +54,6 @@ class LightToolsHistorySerializer(ModelSerializer):
     class Meta:
         model = ToolsHistory
         fields = '__all__'
-    # def create(self, validated_data):
-    #     validated_data['user'] = self.context['user']
-    #     validated_data['tool'] = self.context['tool']
-    #     tools_history = ToolsHistory(**validated_data)
-    #     tools_history.save()
-    #     return tools_history
 
 
 class ToolsCategorySerializer(ModelSerializer):

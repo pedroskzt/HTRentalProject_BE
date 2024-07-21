@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db import models
 
-from api.Models.tools_model import Tools
+from api.models.tools_model import Tools
 
 
 class RentalOrder(models.Model):
@@ -16,6 +16,7 @@ class RentalOrder(models.Model):
         (CANCELLED, "Cancelled"),
     ]
 
+    rental_order_id = models.AutoField(primary_key=True)
     tools = models.ManyToManyField(Tools, through='RentalOrderItem')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     status = models.CharField(choices=status_choices, default=OPEN, max_length=50)
@@ -26,6 +27,7 @@ class RentalOrder(models.Model):
 
 
 class RentalOrderItem(models.Model):
+    rental_order_item_id = models.AutoField(primary_key=True)
     rental_order = models.ForeignKey(RentalOrder, on_delete=models.CASCADE)
     tool = models.ForeignKey(Tools, on_delete=models.CASCADE)
     time_rented = models.IntegerField()
