@@ -2,6 +2,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from core.CustomPermissions.CustomPermissions import IsManager
 from core.ToolsManager.ToolsHandler import ToolsHandler
 
 
@@ -62,6 +63,7 @@ class GetToolsHistoryByUser(APIView):
     def get(self, request):
         return ToolsHandler.handler_get_tools_history_by_user(request.user)
 
+
 class GetAllCategories(APIView):
     """
         View responsible for returning a list of all categories.
@@ -69,25 +71,26 @@ class GetAllCategories(APIView):
 
     def get(self, request):
         return ToolsHandler.handler_get_all_categories()
-   
-   
+
+
 class AddTool(APIView):
     """
     View responsible for adding a tool if the given brand and model doesn't already exist.
     """
 
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, IsManager)
     authentication_classes = (JWTAuthentication,)
 
     def post(self, request):
         return ToolsHandler.handler_add_tool(request=request.data)
-    
+
+
 class UpdateTool(APIView):
     """
     View responsible for updating a tool.
     """
 
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, IsManager)
     authentication_classes = (JWTAuthentication,)
 
     def patch(self, request, tool_id):

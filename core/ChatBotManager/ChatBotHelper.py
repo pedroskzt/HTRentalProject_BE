@@ -47,12 +47,17 @@ class ChatBotHelper:
                                "You are going to help a customer to choose the best tool for his needs.",
                                "You should always informe the brand and model of the tool",
                                "If you make a suggestion, you must include at the end of your message JSON list with the suggested tools and with the following identifier: JSON->."
-                               f"Here is a JSON list with all tools that we have.\n{tools_model_list}",
-                               f"This customer is called {user.get_full_name()}"]
+                               f"Here is a JSON list with all tools that we have.\n{tools_model_list}"]
+
+        if user.is_authenticated:
+            system_instructions.append(f"This customer is called {user.get_full_name()}")
+            user_history = user_history_obj.chat_history
+            user_history = pickle.loads(user_history) if user_history else user_history
+        else:
+            user_history = None
+
         model = GenerativeModel(model_name=settings.MODEL_NAME, system_instruction=system_instructions)
 
-        user_history = user_history_obj.chat_history
-        user_history = pickle.loads(user_history) if user_history else user_history
         return model.start_chat(history=user_history)
 
     @staticmethod

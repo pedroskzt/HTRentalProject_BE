@@ -2,6 +2,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from core.CustomPermissions.CustomPermissions import IsAdminOrManager
 from core.UserManager.UserHandler import UserHandler
 
 
@@ -57,3 +58,11 @@ class ChangePassword(APIView):
 
     def post(self, request):
         return UserHandler.handler_user_change_password(request.data, request.user)
+
+
+class MakeManager(APIView):
+    permission_classes = (IsAuthenticated, IsAdminOrManager)
+    authentication_classes = (JWTAuthentication,)
+
+    def post(self, request):
+        return UserHandler.handler_make_user_manager(request.data)
