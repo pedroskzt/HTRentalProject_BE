@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from rest_framework.serializers import ModelSerializer, SlugRelatedField
+from rest_framework.serializers import ModelSerializer, SlugRelatedField, SerializerMethodField
 
 from api.models.tools_category_model import ToolsCategory
 from api.models.tools_history_model import ToolsHistory
@@ -43,11 +43,17 @@ class ToolsModelSerializer(ModelSerializer):
 
 class ToolsHistorySerializer(ModelSerializer):
     rental_order = SlugRelatedField(read_only=True, slug_field='pk')
+    rental_price = SerializerMethodField(read_only=True)
     user = SlugRelatedField(read_only=True, slug_field='pk')
+
     class Meta:
         model = ToolsHistory
         fields = '__all__'
         depth = 3
+
+    def get_rental_price(self, obj):
+        days = (obj.rent_end_date - obj.rent_start_date).days
+        return days * obj.tool.model.price
 
 
 class LightToolsHistorySerializer(ModelSerializer):
