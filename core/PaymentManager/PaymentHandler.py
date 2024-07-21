@@ -208,6 +208,10 @@ class PaymentHandler:
 
                     if cart_quantity > items_per_model[model]:
                         amount_to_add = cart_quantity - items_per_model[model]
+                        if amount_to_add > available:
+                            amount_to_add = available
+                            quantity_error_msg[
+                                model] = f"Not enough tools. There are only {items_per_model[model] + available} of this tool available."
                         amount_to_add = available if amount_to_add > available else amount_to_add
 
                 else:
@@ -278,10 +282,11 @@ class PaymentHandler:
                         item.tool.available = True
                         item.tool.save()
                         item.delete()
+                        counter -= 1
 
                 # Calculate SubTotal
-                if cart_quantity > 0:
-                    rental_order.sub_total += (cart_quantity * price * time_rented)
+                if counter > 0:
+                    rental_order.sub_total += (counter * price * time_rented)
 
             rental_order.save()
             checkout_ser = CheckoutSerializer(rental_order, context={'error_list': quantity_error_msg})
