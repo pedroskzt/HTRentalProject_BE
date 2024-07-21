@@ -160,7 +160,7 @@ class PaymentHandler:
                 if len(models[tools_model.pk]['tools']) < item.quantity:
                     if len(models[tools_model.pk]['tools']) == 0:
                         models[tools_model.pk]['available'] = 0
-                        models[tools_model.pk]['time_rented'] = 0
+                        # models[tools_model.pk]['time_rented'] = 0
                     else:
                         models[tools_model.pk]['available'] = len(models[tools_model.pk]['tools'])
 
@@ -177,19 +177,27 @@ class PaymentHandler:
 
             rental_order_items = rental_order.tools.through.objects.filter(rental_order_id=rental_order.pk)
             items_per_model = {}
-            for model in rental_order_items.values('tool__model_id').annotate(counter=Count('tool__model_id')):
+            time_rented_per_model = {}
+            for model in rental_order_items.values('tool__model_id', 'time_rented').annotate(
+                    counter=Count('tool__model_id')):
                 items_per_model[model['tool__model_id']] = model['counter']
+                time_rented_per_model[model['tool__model_id']] = model['time_rented']
 
             quantity_error_msg = {}
             order_data_list = []
             used_tools = []
+            items_to_update = {}
             for model in models:
                 available = models[model]['available']
                 cart_quantity = models[model]['cart_quantity']
                 tools = models[model]['tools']
                 amount_to_add = 0
+                time_rented = models[model]['time_rented']
 
                 if model in items_per_model.keys():
+                    if time_rented != time_rented_per_model[model]:
+                        items_to_update[model] = time_rented
+
                     if available == 0:
                         if items_per_model[model] == cart_quantity:
                             continue
@@ -229,6 +237,11 @@ class PaymentHandler:
                         items_per_model[model] += 1
                     else:
                         items_per_model[model] = 1
+
+            # Update time rented if it was changed.
+            for model in items_to_update:
+                time_rented = items_to_update[model]
+                rental_order_items.filter(tool__model_id=model).update(time_rented=time_rented)
 
             rental_order_items_ser = RentalOrderItemSerializer(data=order_data_list, many=True)
             if rental_order_items_ser.is_valid():
