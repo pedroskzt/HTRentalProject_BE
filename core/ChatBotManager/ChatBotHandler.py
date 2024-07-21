@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from django.utils import timezone
 from core.ChatBotManager.ChatBotHelper import ChatBotHelper
 from core.CustomErrors.CustomErrors import CustomError
+from types import SimpleNamespace
 
 
 class ChatBotHandler:
@@ -10,16 +11,18 @@ class ChatBotHandler:
     @staticmethod
     def handler_get_chat_bot_response(request_data, user):
         try:
-            user_history_obj = ChatBotHelper.get_user_history(user)
-            if user_history_obj.exists() and (timezone.now() - user_history_obj.latest('date_created').date_created).days <= 0:
-                user_history_obj = user_history_obj.latest('date_created')
-            else:
-                if user_history_obj.exists():
+            user_history_obj = None
+            if user.is_authenticated:
+                user_history_obj = ChatBotHelper.get_user_history(user)
+                if user_history_obj.exists() and (timezone.now() - user_history_obj.latest('date_created').date_created).days <= 0:
                     user_history_obj = user_history_obj.latest('date_created')
-                    user_history_obj.active = False
-                    user_history_obj.save()
+                else:
+                    if user_history_obj.exists():
+                        user_history_obj = user_history_obj.latest('date_created')
+                        user_history_obj.active = False
+                        user_history_obj.save()
 
-                user_history_obj = ChatBotHelper.create_user_history(user)
+                    user_history_obj = ChatBotHelper.create_user_history(user)
 
             user_chat = ChatBotHelper.initiate_chat(user_history_obj, user)
 
@@ -35,7 +38,8 @@ class ChatBotHandler:
                 text = response.text
                 bot_msg += text
 
-            ChatBotHelper.update_user_history(user_history_obj, user_chat)
+            if user.is_authenticated:
+                ChatBotHelper.update_user_history(user_history_obj, user_chat)
 
             return Response(ChatBotHelper.process_response(bot_msg), status=status.HTTP_200_OK)
         except Exception as e:
