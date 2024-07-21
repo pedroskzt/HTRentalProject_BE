@@ -1,9 +1,9 @@
 from django.db.models import F, Count, Q
 
-from api.Models.tools_category_model import ToolsCategory
-from api.Models.tools_history_model import ToolsHistory
-from api.Models.tools_model import Tools
-from api.Models.tools_model import ToolsModel
+from api.models.tools_category_model import ToolsCategory
+from api.models.tools_history_model import ToolsHistory
+from api.models.tools_model import Tools
+from api.models.tools_model import ToolsModel
 
 
 class ToolsHelper:
@@ -31,7 +31,7 @@ class ToolsHelper:
         :param model_id:
         :return: ToolsModel queryset
         """
-        return ToolsModel.objects.filter(id=model_id)
+        return ToolsModel.objects.filter(pk=model_id)
 
     @staticmethod
     def get_tool_by_id(id):
@@ -39,7 +39,7 @@ class ToolsHelper:
         Get all tools objects.
         :return:
         """
-        return Tools.objects.get(id=id)
+        return Tools.objects.get(pk=id)
 
     @staticmethod
     def get_tool_by_rental_order(rental_order):
@@ -99,7 +99,7 @@ class ToolsHelper:
         :param ToolsModel queryset:
         :return:
         """
-        return queryset.annotate(amount_available=Count(F("tools__id"), filter=Q(tools__available=True)))
+        return queryset.annotate(amount_available=Count(F("tools__pk"), filter=Q(tools__available=True)))
 
     @staticmethod
     def get_all_categories():

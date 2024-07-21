@@ -151,21 +151,18 @@ class PaymentHandler:
             models = {}
             for item in rental_cart_items:
                 tools_model = item.tool
-                models[tools_model.id] = {"tools": list(tools_model.tools_set.filter(available=True)),
+                models[tools_model.pk] = {"tools": list(tools_model.tools_set.filter(available=True)),
                                           "available": item.quantity,
                                           "cart_quantity": item.quantity,
                                           "time_rented": item.rental_time,
                                           "errors": []}
                 # Check if quantity requested is available
-                if len(models[tools_model.id]['tools']) < item.quantity:
-                    if len(models[tools_model.id]['tools']) == 0:
-                        models[tools_model.id]['available'] = 0
-                        models[tools_model.id]['time_rented'] = 0
-                        # models[tools_model.id]['errors'] = ["No more of this tool is available to rent."]
+                if len(models[tools_model.pk]['tools']) < item.quantity:
+                    if len(models[tools_model.pk]['tools']) == 0:
+                        models[tools_model.pk]['available'] = 0
+                        models[tools_model.pk]['time_rented'] = 0
                     else:
-                        models[tools_model.id]['available'] = len(models[tools_model.id]['tools'])
-                        # models[tools_model.id]['erros'] = [
-                        #     f"Only {models[tools_model.id]['quantity']} of this tool are available."]
+                        models[tools_model.pk]['available'] = len(models[tools_model.pk]['tools'])
 
             # Check if this user has an open rental order and get the latest one. If not, create one.
             rental_order = PaymentHelper.get_rental_orders_by_user(user)
@@ -296,6 +293,9 @@ class PaymentHandler:
                                 status=status.HTTP_400_BAD_REQUEST)
             rental_order = rental_order.latest('date_created')
 
+            if rental_order.status != rental_order.OPEN:
+                return Response(CustomError.get_error_by_code("POC-2"), status=status.HTTP_400_BAD_REQUEST)
+
             # Log the rental history of the tools.
             tools_rented = []
             for item in rental_order.tools.through.objects.filter(rental_order_id=rental_order.pk):
@@ -303,6 +303,7 @@ class PaymentHandler:
                 end_date = timezone.now() + timezone.timedelta(days=item.time_rented)
                 tools_rented.append({"tool": item.tool.pk,
                                      "user": user.pk,
+                                     "rental_order": rental_order.pk,
                                      "rent_start_date": start_date,
                                      "rent_end_date": end_date})
 

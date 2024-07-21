@@ -1,9 +1,10 @@
 from django.db import models
 
-from api.Models.tools_model_model import ToolsModel
+from api.models.tools_model_model import ToolsModel
 
 
 class Tools(models.Model):
+    tool_id = models.AutoField(primary_key=True)
     model = models.ForeignKey(ToolsModel, on_delete=models.SET_NULL, null=True)
     available = models.BooleanField(default=False)
 
