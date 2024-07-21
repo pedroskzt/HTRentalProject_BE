@@ -58,8 +58,7 @@ class PaymentHelper:
         # Check if user has items on the rental cart.
         rental_cart = PaymentHelper.get_rental_cart_by_user(user)
         if rental_cart.exists() is False:
-            return False, Response(CustomError.get_error_by_code("PRC-2", rental_cart.errors),
-                                   status=status.HTTP_400_BAD_REQUEST)
+            return False, Response(CustomError.get_error_by_code("PRC-2"), status=status.HTTP_400_BAD_REQUEST)
         rental_cart = rental_cart.first()
 
         # Check if the existing rental cart has expired

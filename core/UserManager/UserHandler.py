@@ -5,6 +5,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from api_auth.User.UserModel import User
 from api_auth.User.serializers import (UserSerializer, UserUpdateSerializer, UserInfoSerializer)
+from core.CustomErrors.CustomErrors import CustomError
 from core.UserManager.UserHelper import UserHelper
 
 
@@ -18,40 +19,52 @@ class UserHandler:
         :param request_data: Username and password in JSON format.
         :return: JSON response with HTTP status code.
         """
-        email = request_data.get('username')
-        password = request_data.get('password')
-        if email and password:
-            try:
-                user = UserHelper.get_user_by_email(email)
-            except User.DoesNotExist:
-                return Response('User does not exist', status=status.HTTP_400_BAD_REQUEST)
+        try:
+            email = request_data.get('username')
+            password = request_data.get('password')
+            if email and password:
+                try:
+                    user = UserHelper.get_user_by_email(email)
+                except User.DoesNotExist as e:
+                    return Response(CustomError.get_error_by_code("UE-0", e), status=status.HTTP_400_BAD_REQUEST)
 
-            if user.check_password(password):
-                # The user exists and the password is correct then create a Token and return it.
-                token = RefreshToken.for_user(user)
-                response_data = {'refresh': str(token),
-                                 'access': str(token.access_token)}
-                return Response(data=response_data, status=status.HTTP_200_OK)
+                if user.check_password(password):
+                    # The user exists and the password is correct then create a Token and return it.
+                    token = RefreshToken.for_user(user)
+                    response_data = {'refresh': str(token),
+                                     'access': str(token.access_token)}
+                    return Response(response_data, status=status.HTTP_200_OK)
+            return Response(CustomError.get_error_by_code("UE-0"), status=status.HTTP_400_BAD_REQUEST)
 
-        return Response('Invalid credentials', status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(CustomError.get_error_by_code("GE-0", e), status=status.HTTP_400_BAD_REQUEST)
 
     @staticmethod
     def handler_user_registration(request_data):
-
         """
+        Handler for register a new user.
+        :param request_data:{
+                            "first_name": "John",
+                            "last_name": "Manager",
+                            "email": "j.manager@example.com",
+                            "password": "Password@123",
+                            "address": "123 JhonDoe Street",
+                            "phone_number": "+1 98765432"
+                        }
+        :return:
         """
         try:
-
             request_data['username'] = request_data.get('email')
             user_serializer = UserSerializer(data=request_data)
             if user_serializer.is_valid():
                 user_serializer.save()
             else:
-                return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response(CustomError.get_error_by_code("GE-0", user_serializer.errors),
+                                status=status.HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_201_CREATED)
 
-        except ValueError as e:
-            return Response("Error occuned during registration flow.", status=status.HTTP_400_BAD_REQUEST)
-        return Response("User registration was successful.", status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response(CustomError.get_error_by_code("GE-0", e), status=status.HTTP_400_BAD_REQUEST)
 
     @staticmethod
     def handler_user_update(request_data, user):
@@ -67,20 +80,23 @@ class UserHandler:
         :param user:
         :return:
         """
+        try:
+            user_serializer = UserUpdateSerializer(user, data=request_data)
+            if user_serializer.is_valid():
+                user_serializer.save()
+                return Response(user_serializer.data, status=status.HTTP_202_ACCEPTED)
 
-        user_serializer = UserUpdateSerializer(user, data=request_data)
-        if user_serializer.is_valid():
-            user_serializer.save()
-            return Response(user_serializer.data, status=status.HTTP_202_ACCEPTED)
-        else:
-            return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(CustomError.get_error_by_code("GE-0", user_serializer.errors),
+                            status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(CustomError.get_error_by_code("GE-0", e), status=status.HTTP_400_BAD_REQUEST)
 
     @staticmethod
     def handler_get_user_info(user):
         """
         Handler for getting user info.
 
-        :param user_id:
+        :param user:
         :return: dict with user info - first name, last name, email,address, phone number
         """
         try:
@@ -88,11 +104,11 @@ class UserHandler:
 
             if serialized_user:
                 return Response(serialized_user.data, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({'user_error': "Something went wrong, please try again later or contact support.",
-                             "dev_error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({'user_error': "No user was found."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(CustomError.get_error_by_code("UE-2"), status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            return Response(CustomError.get_error_by_code("GE-0", e), status=status.HTTP_400_BAD_REQUEST)
 
     @staticmethod
     def handler_user_change_password(request_data, user):
@@ -110,7 +126,7 @@ class UserHandler:
         """
         try:
             if "password" not in request_data or request_data.get('password') is None:
-                return Response("Password must be passed in and cannot be null or empty",
+                return Response(CustomError.get_error_by_code("UE-3"),
                                 status=status.HTTP_400_BAD_REQUEST)
 
             # If any of the validations fail, an exception will be raised
@@ -118,6 +134,6 @@ class UserHandler:
             user.set_password(request_data.get('password'))
             user.save()
 
-            return Response("Password has been updated successfully.", status=status.HTTP_200_OK)
+            return Response(status=status.HTTP_200_OK)
         except Exception as e:
-            return Response(e, status=status.HTTP_400_BAD_REQUEST)
+            return Response(CustomError.get_error_by_code("GE-0", e), status=status.HTTP_400_BAD_REQUEST)

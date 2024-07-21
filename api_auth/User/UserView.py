@@ -1,6 +1,4 @@
-from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
@@ -34,11 +32,8 @@ class UserUpdate(APIView):
     authentication_classes = (JWTAuthentication,)
 
     def post(self, request):
-        try:
-            return UserHandler.handler_user_update(request.data, request.user)
-        except Exception as e:
-            return Response({'user_error': "Something went wrong, please try again later or contact support.",
-                             "dev_error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return UserHandler.handler_user_update(request.data, request.user)
+
 
 class UserGetInfo(APIView):
     """
@@ -50,6 +45,7 @@ class UserGetInfo(APIView):
 
     def get(self, request):
         return UserHandler.handler_get_user_info(request.user)
+
 
 class ChangePassword(APIView):
     """
