@@ -51,11 +51,11 @@ class CheckoutSerializer(ModelSerializer):
         if error_list:
             for model in tools_models:
                 model_id = model["tool__model_id"]
-                model["error_msg"] = error_list[model_id]
+                model["error_msg"] = error_list.get(model_id)
 
             if tools_models.exists() is False:
                 return [{"tool__model_id": model_id,
-                         "error_msg": error_list[model_id],
+                         "error_msg": error_list.get(model_id),
                          "time_rented": None,
                          "quantity": None} for model_id in error_list]
 
