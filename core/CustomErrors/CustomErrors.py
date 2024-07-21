@@ -47,6 +47,8 @@ class CustomError:
         "UE-1": ("Error while serializing User. Exception raised:", "Something went wrong, please try again later."),
         "UE-2": ("User not found. Exception raised:", "User not found."),
         "UE-3": ("Empty Password. Exception raised:", "Password must be passed in and cannot be null or empty."),
+        "UE-4": ("Manager Group Not Found. Exception raised:", "Manager group not found. Please contact support."),
+        "UE-5": ("User is already a manager. Exception raised:", "User is already a manager."),
         "CB-0": ("Empty User Input. Exception raised:", "Empty Input."),
     }
 

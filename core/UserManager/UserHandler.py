@@ -137,3 +137,21 @@ class UserHandler:
             return Response(status=status.HTTP_200_OK)
         except Exception as e:
             return Response(CustomError.get_error_by_code("GE-0", e), status=status.HTTP_400_BAD_REQUEST)
+
+    @staticmethod
+    def handler_make_user_manager(request_data):
+        try:
+            user = UserHelper.get_user_by_email(request_data.get('email'))
+            manager_group = UserHelper.get_manager_group()
+            if manager_group.exists() is False:
+                return Response(CustomError.get_error_by_code("UE-4"), status=status.HTTP_400_BAD_REQUEST)
+            manager_group = manager_group.first()
+
+            if manager_group in user.groups.all():
+                return Response(CustomError.get_error_by_code("UE-5"), status=status.HTTP_400_BAD_REQUEST)
+
+            user.groups.add(manager_group)
+
+            return Response(status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(CustomError.get_error_by_code("GE-0", e), status=status.HTTP_400_BAD_REQUEST)
